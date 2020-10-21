@@ -28,10 +28,12 @@
 	body_temperature = 286
 
 	has_organ = list(
-		"heart" =    /obj/item/organ/internal/heart,
-		"brain" =    /obj/item/organ/internal/brain,
+		"heart" =    /obj/item/organ/internal/heart/wryn,
+		"brain" =    /obj/item/organ/internal/brain/wryn,
 		"eyes" =     /obj/item/organ/internal/eyes/wryn, //3 darksight.
 		"appendix" = /obj/item/organ/internal/appendix,
+		"kidneys" = /obj/item/organ/internal/kidneys/wryn,
+		"liver" = /obj/item/organ/internal/liver/wryn, //We want chem/tox processing like Kidan here
 		"antennae" =    /obj/item/organ/internal/wryn/hivenode
 		)
 
