@@ -289,9 +289,6 @@
 			on = FALSE
 	return
 
-/obj/machinery/light/get_spooked()
-	flicker()
-
 /**
   * Updates the light's properties
   *
@@ -519,21 +516,37 @@
 	var/area/A = get_area(src)
 	return A.lightswitch && A.power_light
 
-/obj/machinery/light/proc/flicker(amount = rand(10, 20))
+/obj/machinery/light/flicker(amount = rand(20, 30))
 	if(flickering)
-		return
-	if(on)
-		flickering = TRUE
-		for(var/i in 1 to amount)
+		return FALSE
+
+	if(!on || status != LIGHT_OK)
+		return FALSE
+
+	flickering = TRUE
+	INVOKE_ASYNC(src, /obj/machinery/light/.proc/flicker_event, amount)
+
+	return TRUE
+
+/**
+  * Flicker routine for the light.
+  * Called by invoke_async so the parent proc can return immediately.
+  */
+/obj/machinery/light/proc/flicker_event(amount)
+	if(on && status == LIGHT_OK)
+		for(var/i = 0; i < amount; i++)
 			if(status != LIGHT_OK)
 				break
-			on = !on
-			update() // No param means that ghosts can burn out lights
-			sleep(rand(5, 15))
-		if(status == LIGHT_OK)
-			on = TRUE
+			on = FALSE
 			update(FALSE)
+			sleep(rand(1, 3))
+			on = (status == LIGHT_OK)
+			update(FALSE)
+			sleep(rand(1, 10))
+		on = (status == LIGHT_OK)
+		update(FALSE)
 	flickering = FALSE
+
 
 // ai attack - make lights flicker, because why not
 /obj/machinery/light/attack_ai(mob/user)
@@ -563,9 +576,9 @@
 		else
 			prot = 1
 
-		if(prot > 0 || (HEATRES in user.mutations))
+		if(prot > 0 ||  HAS_TRAIT(user, TRAIT_RESISTHEAT) || HAS_TRAIT(user, TRAIT_RESISTHEATHANDS))
 			to_chat(user, "<span class='notice'>You remove the light [fitting]</span>")
-		else if(TK in user.mutations)
+		else if(user.dna?.GetSEState(GLOB.teleblock))
 			to_chat(user, "<span class='notice'>You telekinetically remove the light [fitting].</span>")
 		else
 			if(user.a_intent == INTENT_DISARM || user.a_intent == INTENT_GRAB)
@@ -639,10 +652,13 @@
 	on = 1
 	update()
 
-/obj/machinery/light/tesla_act(power, explosive = FALSE)
+/obj/machinery/light/zap_act(power, zap_flags)
+	var/explosive = zap_flags & ZAP_MACHINE_EXPLOSIVE
+	zap_flags &= ~(ZAP_MACHINE_EXPLOSIVE | ZAP_OBJ_DAMAGE)
+	. = ..()
 	if(explosive)
-		explosion(loc,0,0,0,flame_range = 5, adminlog = 0)
-	qdel(src)
+		explosion(src, 0, 0, 0, flame_range = 5, adminlog = FALSE)
+		qdel(src)
 
 // timed process
 // use power
@@ -814,7 +830,7 @@
 	..()
 	shatter()
 
-/obj/item/light/attack_obj(obj/O, mob/living/user)
+/obj/item/light/attack_obj(obj/O, mob/living/user, params)
 	..()
 	shatter()
 
