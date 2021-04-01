@@ -73,7 +73,7 @@
 	var/custom_sprite = 0
 	var/slowdown = 0
 
-/mob/living/silicon/pai/New(var/obj/item/paicard)
+/mob/living/silicon/pai/New(obj/item/paicard)
 	loc = paicard
 	card = paicard
 	if(card)
@@ -211,7 +211,7 @@
 	return
 
 
-// See software.dm for tgui_act()
+// See software.dm for ui_act()
 
 /mob/living/silicon/pai/attack_animal(mob/living/simple_animal/M)
 	. = ..()
@@ -441,11 +441,15 @@
 
 	switch(stat)
 		if(CONSCIOUS)
-			if(!client)	msg += "\nIt appears to be in stand-by mode." //afk
-		if(UNCONSCIOUS)		msg += "\n<span class='warning'>It doesn't seem to be responding.</span>"
-		if(DEAD)			msg += "\n<span class='deadsay'>It looks completely unsalvageable.</span>"
+			if(!client)
+				msg += "\nIt appears to be in stand-by mode." //afk
+		if(UNCONSCIOUS)
+			msg += "\n<span class='warning'>It doesn't seem to be responding.</span>"
+		if(DEAD)
+			msg += "\n<span class='deadsay'>It looks completely unsalvageable.</span>"
 
-	if(print_flavor_text()) msg += "\n[print_flavor_text()]"
+	if(print_flavor_text())
+		msg += "\n[print_flavor_text()]"
 
 	if(pose)
 		if( findtext(pose,".",length(pose)) == 0 && findtext(pose,"!",length(pose)) == 0 && findtext(pose,"?",length(pose)) == 0 )
@@ -455,7 +459,7 @@
 
 	. += msg
 
-/mob/living/silicon/pai/bullet_act(var/obj/item/projectile/Proj)
+/mob/living/silicon/pai/bullet_act(obj/item/projectile/Proj)
 	..(Proj)
 	if(stat != 2)
 		spawn(1)
@@ -525,3 +529,9 @@
 	flashlight_on = FALSE
 	set_light(0)
 	card.set_light(0)
+
+/mob/living/silicon/pai/update_runechat_msg_location()
+	if(istype(loc, /obj/item/paicard))
+		runechat_msg_location = loc
+	else
+		runechat_msg_location = src
